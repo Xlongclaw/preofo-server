@@ -1,10 +1,10 @@
 require("dotenv").config();
 import express from "express";
 import generateRandomNumber from "./utils/generateRandomNumber";
-import connectDB from "./database/connectDB";
-import userOtpModel from "./database/models/userOtpModel";
 const bodyParser = require("body-parser");
 
+const userOtpModel = require("./database/models/userOtpModel");
+const connectDB = require('./database/connectDB')
 const server = express();
 server.use(bodyParser.json());
 const textflow = require("textflow.js");
@@ -44,5 +44,5 @@ server.listen(PORT, async () => {
   console.log(`Preofo Server Listening on PORT : ${PORT}`);
   await connectDB()
     .then(() => console.log("Data Connection successful."))
-    .catch((err) => console.error(err));
+    .catch((err:any) => console.error(err));
 });
