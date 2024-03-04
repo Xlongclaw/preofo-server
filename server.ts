@@ -13,7 +13,7 @@ textflow.useKey(process.env.TEXTFLOW_APIKEY);
 
 server.get("/sendOtp", async (req, res) => {
   if (req.query.serverKey == process.env.PREOFO_SERVER_KEY) {
-    const OTP = generateRandomNumber(6);
+    const OTP = generateRandomNumber(4);
     textflow.sendSMS(
       "+91" + req.query.phoneNumber,
       `Your Preofo Verification Code is ${OTP}`
