@@ -36,6 +36,10 @@ server.get("/validateOtp", async (req, res) => {
   else res.json({'code':'OTP_EXPIRED'}).status(401)
 });
 
+server.get('/',(req,res)=>{
+  res.send("I am Preofo Server and i am running")
+})
+
 server.listen(PORT, async () => {
   console.log(`Preofo Server Listening on PORT : ${PORT}`);
   await connectDB()
