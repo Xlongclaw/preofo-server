@@ -46,10 +46,10 @@ server.post("/addUser", async (req, res) => {
   const tokenData = verifyToken(req.body.userToken)
   if(tokenData.status == 'VERIFIED'){
     await partnerModel.create({name:req.body.name,password:req.body.password,phoneNumber:tokenData.data})
-    res.send("SUCCESS").status(200)
+    res.json({'code':'SUCCESS'}).status(200)
   }
   else{
-    res.send("INVALID_TOKEN").status(400)
+    res.json({'code':'INVALID_TOKEN'}).status(400)
   }
 });
 
