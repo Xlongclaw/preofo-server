@@ -42,11 +42,29 @@ server.get("/validateOtp", async (req, res) => {
   else res.json({'code':'OTP_EXPIRED'}).status(401)
 });
 
+
+/**
+ * BODY REQ - {name,password,userToken}
+ */
 server.post("/addUser", async (req, res) => { 
   const tokenData = verifyToken(req.body.userToken)
   if(tokenData.status == 'VERIFIED'){
     await partnerModel.create({name:req.body.name,password:req.body.password,phoneNumber:tokenData.data})
     res.json({'code':'SUCCESS'}).status(200)
+  }
+  else{
+    res.json({'code':'INVALID_TOKEN'}).status(400)
+  }
+});
+
+/**
+ * Params = userToken
+ */
+server.get("/getUserFromUserToken", async (req, res) => { 
+  const tokenData = verifyToken(req.query.userToken)
+  if(tokenData.status == 'VERIFIED'){
+    const data = await partnerModel.find({phoneNumber:tokenData.data})
+    res.json({'code':'SUCCESS',data})
   }
   else{
     res.json({'code':'INVALID_TOKEN'}).status(400)
