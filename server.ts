@@ -2,7 +2,8 @@ require("dotenv").config();
 import express from "express";
 import generateRandomNumber from "./utils/generateRandomNumber";
 const bodyParser = require("body-parser");
-
+const partnerModel = require('./database/models/partnerModel')
+const verifyToken = require('./utils/verifyToken')
 const userOtpModel = require("./database/models/userOtpModel");
 const connectDB = require('./database/connectDB')
 const server = express();
@@ -33,12 +34,23 @@ server.get("/validateOtp", async (req, res) => {
   let user = await userOtpModel.findOne({phoneNumber:req.query.phoneNumber})
   if(user){    
     if(user.otp == req.query.otp){
-      const userToken = generateToken(JSON.stringify({phoneNumber:req.query.phoneNumber}))
+      const userToken = generateToken(req.query.phoneNumber)
       res.json({'code':'SUCCESS',userToken}).status(200)
     }  
     else res.json({'code':'INVALID_OTP'}).status(400)
   }
   else res.json({'code':'OTP_EXPIRED'}).status(401)
+});
+
+server.post("/addUser", async (req, res) => { 
+  const tokenData = verifyToken(req.body.userToken)
+  if(tokenData.status == 'VERIFIED'){
+    await partnerModel.create({name:req.body.name,password:req.body.password,phoneNumber:tokenData.data})
+    res.send("SUCCESS").status(200)
+  }
+  else{
+    res.send("INVALID_TOKEN").status(400)
+  }
 });
 
 server.get('/',(req,res)=>{
