@@ -10,6 +10,8 @@ server.use(bodyParser.json());
 const textflow = require("textflow.js");
 const PORT = process.env.PORT ?? 8080;
 textflow.useKey(process.env.TEXTFLOW_APIKEY);
+const generateToken = require('./utils/generateToken')
+
 
 server.get("/sendOtp", async (req, res) => {
   if (req.query.serverKey == process.env.PREOFO_SERVER_KEY) {
@@ -30,7 +32,10 @@ server.get("/sendOtp", async (req, res) => {
 server.get("/validateOtp", async (req, res) => { 
   let user = await userOtpModel.findOne({phoneNumber:req.query.phoneNumber})
   if(user){    
-    if(user.otp == req.query.otp) res.json({'code':'SUCCESS'}).status(200)
+    if(user.otp == req.query.otp){
+      const userToken = generateToken(JSON.stringify({phoneNumber:req.query.phoneNumber}))
+      res.json({'code':'SUCCESS',userToken}).status(200)
+    }  
     else res.json({'code':'INVALID_OTP'}).status(400)
   }
   else res.json({'code':'OTP_EXPIRED'}).status(401)
