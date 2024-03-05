@@ -29,8 +29,8 @@ server.get("/sendOtp", async (req, res) => {
 
 server.get("/validateOtp", async (req, res) => {
   let user = await userOtpModel.findOne({phoneNumber:req.query.phoneNumber})
-  if(user){
-    if(user.otp === req.query.otp) res.json({'code':'SUCCESS'}).status(200)
+  if(user){    
+    if(user.otp == req.query.otp) res.json({'code':'SUCCESS'}).status(200)
     else res.json({'code':'INVALID_OTP'}).status(400)
   }
   else res.json({'code':'OTP_EXPIRED'}).status(401)
