@@ -27,9 +27,7 @@ server.get("/sendOtp", async (req, res) => {
       .status(400);
 });
 
-server.get("/validateOtp", async (req, res) => {
-  console.log(req.query.otp);
-  
+server.get("/validateOtp", async (req, res) => { 
   let user = await userOtpModel.findOne({phoneNumber:req.query.phoneNumber})
   if(user){    
     if(user.otp == req.query.otp) res.json({'code':'SUCCESS'}).status(200)
