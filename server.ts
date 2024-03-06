@@ -13,7 +13,11 @@ const PORT = process.env.PORT ?? 8080;
 textflow.useKey(process.env.TEXTFLOW_APIKEY);
 const generateToken = require('./utils/generateToken')
 
-
+/**
+ * COMMON APIs:
+ * 
+ * These APIs can be used by both preofo-partner application and preofo application.
+ */
 server.get("/sendOtp", async (req, res) => {
   if (req.query.serverKey == process.env.PREOFO_SERVER_KEY) {
     const OTP = generateRandomNumber(4);
@@ -44,6 +48,10 @@ server.get("/validateOtp", async (req, res) => {
 
 
 /**
+ * USER SPECIFIC APIs
+ */
+
+/**
  * BODY REQ - {name,password,userToken}
  */
 server.post("/addUser", async (req, res) => { 
@@ -56,6 +64,7 @@ server.post("/addUser", async (req, res) => {
     res.status(400).json({'code':'INVALID_TOKEN'})
   }
 });
+
 
 /**
  * Params = userToken
@@ -71,10 +80,68 @@ server.get("/getUserFromUserToken", async (req, res) => {
   }
 });
 
+
 /**
  * Params = phoneNumber,password
  */
 server.get("/getUserFromCredentials", async (req, res) => { 
+  const {phoneNumber,password} = req.query;
+  const user = await partnerModel.findOne({phoneNumber})
+  if(user){
+    if( user.password === password){
+      const userToken = generateToken(req.query.phoneNumber)
+      res.json({'code':"SUCCESS",user,userToken})
+    }
+    else res.status(400).json({'code':'PASSWORD_DOES_NOT_MATCH'})
+  }
+  else res.status(400).json({'code':'USER_DOES_NOT_EXIST'})
+});
+
+
+/**
+ * PARTNER SPECIFIC APIs
+ */
+
+
+/**
+ * Body required ->
+ *   {
+ *    name:string,
+ *    password:string,
+ *    userToken:string
+ *    }
+ * 
+ * Endpoint -> /addPartner
+ * method -> POST
+ */
+server.post("/addPartner", async (req, res) => { 
+  const tokenData = verifyToken(req.body.userToken)
+  if(tokenData.status == 'VERIFIED'){
+    await partnerModel.create({name:req.body.name,password:req.body.password,phoneNumber:tokenData.data})
+    res.status(200).json({'code':'SUCCESS'})
+  }
+  else{
+    res.status(400).json({'code':'INVALID_TOKEN'})
+  }
+});
+
+
+/**
+ * Params = userToken
+ */
+server.get("/getPartnerFromUserToken", async (req, res) => { 
+  const tokenData = verifyToken(req.query.userToken)
+  if(tokenData.status == 'VERIFIED'){
+    const data = await partnerModel.find({phoneNumber:tokenData.data})
+    res.status(200).json({'code':'SUCCESS',data})
+  }
+  else{
+    res.status(400).json({'code':'INVALID_TOKEN'})
+  }
+});
+
+
+server.get("/getPartnerFromCredentials", async (req, res) => { 
   const {phoneNumber,password} = req.query;
   const user = await partnerModel.findOne({phoneNumber})
   if(user){
