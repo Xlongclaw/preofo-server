@@ -23,11 +23,11 @@ server.get("/sendOtp", async (req, res) => {
     );
     await userOtpModel.findOneAndDelete({phoneNumber:req.query.phoneNumber})
     await userOtpModel.create({phoneNumber:req.query.phoneNumber,otp:OTP,expireAt:new Date()})
-    res.send(JSON.stringify({ message: "OTP Sent Successfully" })).status(200);
+    res.status(200).send(JSON.stringify({ message: "OTP Sent Successfully" }))
   } else
-    res
+    res.status(400)
       .send(JSON.stringify({ message: "Invalid Preofo Server Key !!!" }))
-      .status(400);
+      
 });
 
 server.get("/validateOtp", async (req, res) => { 
@@ -35,11 +35,11 @@ server.get("/validateOtp", async (req, res) => {
   if(user){    
     if(user.otp == req.query.otp){
       const userToken = generateToken(req.query.phoneNumber)
-      res.json({'code':'SUCCESS',userToken}).status(200)
+      res.status(200).json({'code':'SUCCESS',userToken})
     }  
-    else res.json({'code':'INVALID_OTP'}).status(400)
+    else res.status(400).json({'code':'INVALID_OTP'})
   }
-  else res.json({'code':'OTP_EXPIRED'}).status(401)
+  else res.status(401).json({'code':'OTP_EXPIRED'})
 });
 
 
@@ -50,10 +50,10 @@ server.post("/addUser", async (req, res) => {
   const tokenData = verifyToken(req.body.userToken)
   if(tokenData.status == 'VERIFIED'){
     await partnerModel.create({name:req.body.name,password:req.body.password,phoneNumber:tokenData.data})
-    res.json({'code':'SUCCESS'}).status(200)
+    res.status(200).json({'code':'SUCCESS'})
   }
   else{
-    res.json({'code':'INVALID_TOKEN'}).status(400)
+    res.status(400).json({'code':'INVALID_TOKEN'})
   }
 });
 
@@ -64,11 +64,23 @@ server.get("/getUserFromUserToken", async (req, res) => {
   const tokenData = verifyToken(req.query.userToken)
   if(tokenData.status == 'VERIFIED'){
     const data = await partnerModel.find({phoneNumber:tokenData.data})
-    res.json({'code':'SUCCESS',data})
+    res.status(200).json({'code':'SUCCESS',data})
   }
   else{
-    res.json({'code':'INVALID_TOKEN'}).status(400)
+    res.status(400).json({'code':'INVALID_TOKEN'})
   }
+});
+
+/**
+ * Params = phoneNumber,password
+ */
+server.get("/getUserFromCredentials", async (req, res) => { 
+  const {phoneNumber,password} = req.query
+  const user = await partnerModel.findOne({phoneNumber})
+  if(user.password === password){
+    res.json({'code':"SUCCESS",user})
+  }
+  else res.status(400).json({'code':'PASSWORD_DOES_NOT_MATCH'})
 });
 
 server.get('/',(req,res)=>{
