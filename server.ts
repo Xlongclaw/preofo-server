@@ -77,10 +77,13 @@ server.get("/getUserFromUserToken", async (req, res) => {
 server.get("/getUserFromCredentials", async (req, res) => { 
   const {phoneNumber,password} = req.query
   const user = await partnerModel.findOne({phoneNumber})
-  if(user.password === password){
-    res.json({'code':"SUCCESS",user})
+  if(user){
+    if( user.password === password){
+      res.json({'code':"SUCCESS",user})
+    }
+    else res.status(400).json({'code':'PASSWORD_DOES_NOT_MATCH'})
   }
-  else res.status(400).json({'code':'PASSWORD_DOES_NOT_MATCH'})
+  else res.status(400).json({'code':'USER_DOES_NOT_EXIST'})
 });
 
 server.get('/',(req,res)=>{
