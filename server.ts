@@ -20,17 +20,23 @@ const generateToken = require('./utils/generateToken')
  */
 server.get("/sendOtp", async (req, res) => {
   if (req.query.serverKey == process.env.PREOFO_SERVER_KEY) {
-    const OTP = generateRandomNumber(4);
-    textflow.sendSMS(
-      "+91" + req.query.phoneNumber,
-      `Your Preofo Verification Code is ${OTP}`
-    );
-    await userOtpModel.findOneAndDelete({phoneNumber:req.query.phoneNumber})
-    await userOtpModel.create({phoneNumber:req.query.phoneNumber,otp:OTP,expireAt:new Date()})
-    res.status(200).send(JSON.stringify({ message: "OTP Sent Successfully" }))
+    const user = await partnerModel.findOne({phoneNumber:req.query.phoneNumber})
+    if(user){
+      res.status(401).send(JSON.stringify({ code: "USER_EXISTS" }))
+    }
+    else{
+      const OTP = generateRandomNumber(4);
+      textflow.sendSMS(
+        "+91" + req.query.phoneNumber,
+        `Your Preofo Verification Code is ${OTP}`
+      );
+      await userOtpModel.findOneAndDelete({phoneNumber:req.query.phoneNumber})
+      await userOtpModel.create({phoneNumber:req.query.phoneNumber,otp:OTP,expireAt:new Date()})
+      res.status(200).send(JSON.stringify({ code: "OTP Sent Successfully" }))
+    }
   } else
     res.status(400)
-      .send(JSON.stringify({ message: "Invalid Preofo Server Key !!!" }))
+      .send(JSON.stringify({ code: "INVALID_SERVER_KEY" }))
       
 });
 
