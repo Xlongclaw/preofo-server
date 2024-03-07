@@ -32,7 +32,7 @@ server.get("/sendOtp", async (req, res) => {
       );
       await userOtpModel.findOneAndDelete({phoneNumber:req.query.phoneNumber})
       await userOtpModel.create({phoneNumber:req.query.phoneNumber,otp:OTP,expireAt:new Date()})
-      res.status(200).send(JSON.stringify({ code: "OTP Sent Successfully" }))
+      res.status(200).send(JSON.stringify({ code: "SUCCESS" }))
     }
   } else
     res.status(400)
