@@ -22,7 +22,7 @@ server.get("/sendOtp", async (req, res) => {
   if (req.query.serverKey == process.env.PREOFO_SERVER_KEY) {
     const user = await partnerModel.findOne({phoneNumber:req.query.phoneNumber})
     if(user){
-      res.status(401).send(JSON.stringify({ code: "USER_EXISTS" }))
+      res.status(401).json({ code: "USER_EXISTS" })
     }
     else{
       const OTP = generateRandomNumber(4);
@@ -32,11 +32,10 @@ server.get("/sendOtp", async (req, res) => {
       );
       await userOtpModel.findOneAndDelete({phoneNumber:req.query.phoneNumber})
       await userOtpModel.create({phoneNumber:req.query.phoneNumber,otp:OTP,expireAt:new Date()})
-      res.status(200).send(JSON.stringify({ code: "SUCCESS" }))
+      res.status(200).json(({ code: "SUCCESS" }))
     }
   } else
-    res.status(400)
-      .send(JSON.stringify({ code: "INVALID_SERVER_KEY" }))
+    res.status(400).json(({ code: "INVALID_SERVER_KEY" }))
       
 });
 
